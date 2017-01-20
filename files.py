@@ -36,8 +36,8 @@ def read_assos(filepath, header=False, sep="\t", xcol=1, ycol=2):
     :param sep: delimiter, a string, default "\t"
     :param xcol: number of the column contains the dict's key, default 1
     :param ycol: number of the column contains the dict's value, default 2
-    :return: a dict object which keys are entities in the first row, values are
-    set of entities have relationships with the key.
+    :return: a dict object which keys are entities in xcol column, values are
+    set of entities in ycol column which have relationships with the key.
     """
     assos = {}
     xcol -= 1
@@ -314,6 +314,32 @@ def write_sorteddict(dictlist, filepath, header=False, sep="\t"):
         for t in dictlist:
             f.write(str(t[0])+sep+str(t[1])+"\n")
     print("write_sorteddict: writing finished.")
+
+
+def write_assos2matrix(assos, eorder, filepath):
+    """
+
+    :param assos:
+    :param eorder: must be a list
+    :param filepath: filepath to write
+    :return:
+    """
+    with open(filepath, mode='w') as wf:
+        for e1 in eorder:
+            wf.write("\t" + e1)
+        wf.write("\n")
+        for e1 in eorder:
+            wf.write(e1)
+            if e1 in assos.keys():
+                e1set = set(assos[e1])
+            else:
+                e1set = set()
+            for e2 in eorder:
+                if e2 in assos.keys():
+                    wf.write("\t" + str(len(e1set.intersection(assos[e2]))))
+                else:
+                    wf.write("\t0")
+            wf.write("\n")
 
 
 def stat_assos(assos):

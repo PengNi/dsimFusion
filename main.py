@@ -5,6 +5,7 @@ import files
 import similarity_normalize
 
 
+# ------omim pheno 2 geno------
 def omim_p2g():
     mims = omim.OmimEntries()
     mims.readinfo_file("data/omim/mim2gene.txt")
@@ -88,5 +89,4 @@ def get_original_ppi_magger():
 
 
 if __name__ == '__main__':
-    normalize_similarity()
     pass
