@@ -3,6 +3,7 @@
 import omim
 import files
 import similarity_normalize
+import subcellular
 
 
 # ------omim pheno 2 geno------
@@ -59,7 +60,7 @@ def compare_2_version_dgassos():
     pass
 
 
-# ---------access data--------------
+# ---------access data from magger's paper---------
 def get_original_ppi_magger():
     directory = 'D:\\bioinformatics\\paper\\disease\\disease-gene-prediction\\Enhancing the ' \
                 'Prioritization of Disease-Causing Genes through Tissue Specific Protein Interaction Networks\\'
@@ -88,5 +89,14 @@ def get_original_ppi_magger():
     # write_assos(orinet, directory + 'original_ppi.txt')
 
 
+# ------subcellular location------
+def subcellularloc_analysis():
+    prefix = files.read_one_col('data/compartments/localization_class.txt', 1)
+    gene2subloc = subcellular.get_gene2sublocation("data/compartments/human_compartment_knowledge_full.tsv",
+                                                   prefix)
+    files.stat_assos(gene2subloc)
+
+
 if __name__ == '__main__':
+    subcellularloc_analysis()
     pass
