@@ -61,6 +61,8 @@ def compare_2_version_dgassos():
 
 
 # ---------access data from magger's paper---------
+# Magger O, Waldman Y Y, Ruppin E, et al. Enhancing the prioritization of disease-causing genes through tissue
+# specific protein interaction networks[J]. PLoS Comput Biol, 2012, 8(9): e1002690.
 def get_original_ppi_magger():
     directory = 'D:\\bioinformatics\\paper\\disease\\disease-gene-prediction\\Enhancing the ' \
                 'Prioritization of Disease-Causing Genes through Tissue Specific Protein Interaction Networks\\'
@@ -95,8 +97,40 @@ def subcellularloc_analysis():
     gene2subloc = subcellular.get_gene2sublocation("data/compartments/human_compartment_knowledge_full.tsv",
                                                    prefix)
     files.stat_assos(gene2subloc)
+    files.write_assos(gene2subloc, "data/compartments/genesymbol2sublocation_human_knowledge.tsv")
+
+
+# Tang X, Hu X, Yang X, et al. A algorithm for identifying disease genes by incorporating the subcellular
+# localization information into the protein-protein interaction networks[C]//Bioinformatics and Biomedicine (BIBM),
+# 2016 IEEE International Conference on. IEEE, 2016: 308-311.
+def weighting_ppi_by_subcellularloc():
+    p2subloc = files.read_assos("data/birw_xie/BiRW_ppi_gene2subloc.tsv")
+    files.stat_assos(p2subloc)
+    ppiarray = files.read_symmatrix2array("data/birw_xie/BiRW_ppi_network.txt")
+    pnames = files.read_one_col("data/birw_xie/BiRW_ppi_annotation.txt", 1, True)
+    print(len(pnames))
+    wppiarray = subcellular.weighting_ppi(ppiarray, pnames, p2subloc)
+    files.write_symarray2file(wppiarray, "data/birw_xie/BiRW_ppi_network_sublocweighted.txt")
+
+
+# ------BiRW_Xie------
+# Xie M Q, Xu Y J, Zhang Y G, et al. Network-based phenome-genome association prediction by bi-random walk[J].
+# PloS one, 2015, 10(5): e0125138.
+def get_gene2subcellular():
+    genenumber2symbol = files.read_mappings("data/birw_xie/BiRW_ppi_annotation.txt", True)
+    files.stat_maps(genenumber2symbol)
+    genesymbol2subcellular = files.read_assos("data/compartments/genesymbol2sublocation_human_knowledge.tsv")
+    files.stat_assos(genesymbol2subcellular)
+
+    genenumber2subloc = {}
+    for gnum in genenumber2symbol.keys():
+        if genenumber2symbol[gnum] in genesymbol2subcellular.keys():
+            genenumber2subloc[gnum] = set()
+            genenumber2subloc[gnum].update(genesymbol2subcellular[genenumber2symbol[gnum]])
+    files.stat_assos(genenumber2subloc)
+    # files.write_assos(genenumber2subloc, "data/birw_xie/BiRW_ppi_gene2subloc.tsv")
 
 
 if __name__ == '__main__':
-    subcellularloc_analysis()
+    # weighting_ppi_by_subcellularloc()
     pass

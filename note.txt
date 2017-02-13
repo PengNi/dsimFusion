@@ -6,6 +6,16 @@
 ，600800是基因，但为什么跟在表型名字后面，而且还和147796有关系？
 # --------------------------------
 
+# --------------------------------
+2. ppi for tissue-specific analysis
+refercences: Magger O, Waldman Y Y, Ruppin E, et al. Enhancing the prioritization of disease-causing genes through
+tissue specific protein interaction networks[J]. PLoS Comput Biol, 2012, 8(9): e1002690.
+Ni J, Koyuturk M, Tong H, et al. Disease gene prioritization by integrating tissue-specific molecular networks using a
+robust multi-network model[J]. BMC bioinformatics, 2016, 17(1): 453.
+经统计Ni文章里各组织ppi, 整个ppi stat为:
+nodes: 9998 (entrezid) edges: 41049
+# --------------------------------
+
 
 
 

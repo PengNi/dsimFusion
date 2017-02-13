@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 """functions about read from and write to files"""
 import copy
+import numpy as np
 
 
 def read_one_col(filepath, col, header=False, sep="\t", encoding='utf-8'):
@@ -177,6 +178,43 @@ def read_simmatrix(filepath, rowheader=True, colheader=True, sep="\t"):
                     sim[rownames[rcount]][colnames[i]] = vtemp
             rcount += 1
     return sim
+
+
+def read_symmatrix2array(filepath, sep="\t"):
+    """
+    file only contains a symmetric matrix elements, no rownames and colnames.
+    :param filepath: file path of a file
+    :param sep: delimiter
+    :return: numpy array
+    """
+    with open(filepath, mode='r') as rf:
+        firstrow = next(rf)
+        firstwords = firstrow.strip().split(sep=sep)
+        symmat = np.zeros((len(firstwords), len(firstwords)))
+        symmat[0, :] = [float(x) for x in firstwords]
+        index = 1
+        for line in rf:
+            words = line.strip().split(sep)
+            symmat[index, :] = [float(x) for x in words]
+            index += 1
+        return symmat
+
+
+def write_symarray2file(symarray, filepath, sep="\t"):
+    """
+
+    :param symarray:
+    :param filepath:
+    :param sep:
+    :return:
+    """
+    with open(filepath, mode='w') as wf:
+        rlen, clen = symarray.shape
+        for i in range(0, rlen):
+            for j in range(0, clen-1):
+                wf.write(str(symarray[i, j]) + sep)
+            wf.write(str(symarray[i, clen-1]) + "\n")
+    print("write_symarray2file: writing finished.")
 
 
 def write_mappings(dictionary, filepath, header=False, sep="\t"):
@@ -454,3 +492,40 @@ def combine_two_assos(dict1, dict2):
             dict_all[k] = set()
         dict_all[k] |= dict2[k]
     return dict_all
+
+
+def convert_dict_values(dictionary, mapping):
+    """
+    convert dict value ids upon a mapping dict
+    :param dictionary: dict whose key-value is string-set<string>
+    :param mapping: dict whose key-value is string-string/string-set<string>
+    :return:
+    """
+    newdict = {}
+    for k in dictionary.keys():
+        newdict[k] = set()
+        for v in dictionary[k]:
+            if v in mapping.keys():
+                if isinstance(mapping[v], str):
+                    newdict[k].add(mapping[v])
+                else:
+                    newdict[k].update(mapping[v])
+    ks = list(newdict.keys())
+    for k in ks:
+        if len(newdict[k]) == 0:
+            del newdict[k]
+    return newdict
+
+
+def convert_dict_keys(dictionary, mapping):
+    """
+    convert dict value ids upon a mapping dict
+    :param dictionary: dict whose key-value is string-whatever
+    :param mapping: dict whose key-value is string-string
+    :return:
+    """
+    newdict = {}
+    for k in dictionary.keys():
+        if k in mapping.keys():
+            newdict[mapping[k]] = dictionary[k]
+    return newdict
