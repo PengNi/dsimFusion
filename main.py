@@ -4,6 +4,8 @@ import omim
 import files
 import similarity_normalize
 import subcellular
+import mapping
+import similarity_module
 
 
 # ------omim pheno 2 geno------
@@ -43,6 +45,28 @@ def normalize_similarity():
                           "D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\"
                           "similarity_snfmimminerspavgn_digeomim170_originalppimagger_matrix.tsv", True, d170)
     pass
+
+
+def normalize_similarity2():
+    sims = files.read_sims("data/sims/similarity_funsim_birwdgomim2007_triplet.tsv")
+    knnsims = similarity_normalize.norm_k_nearest_neighbor(sims)
+    dnames = files.read_one_col("data/birw_xie/BiRW_phenotype_annotation.txt", 2)
+    files.write_simmatrix(knnsims, "data/sims/similarity_funsimknn_birwdgomim2007_5080mat.tsv", True, dnames)
+
+
+# ------similarity calculation------
+def simcal_module():
+    g = similarity_module.read_interactome("data/birw_xie/BiRW_ppi_network_hprdnumber.txt", False, False)
+    print(len(g.vs), len(g.es))
+    d2g = files.read_assos("data/birw_xie/BiRW_pheno2genonumber_omim2007.txt")
+    files.stat_assos(d2g)
+    sim = similarity_module.similarity_cal_spavgn(d2g, g)
+    files.write_sims(sim, "data/sims/similarity_spavgn_birwdgomim2007_birwhprd.tsv")
+
+    knnsims = similarity_normalize.norm_k_nearest_neighbor(sim)
+    dnames = files.read_one_col("data/birw_xie/BiRW_phenotype_annotation.txt", 2)
+    files.write_simmatrix(knnsims, "data/sims/similarity_spavgnknn_birwdgomim2007_birwhprd_5080mat.tsv",
+                          True, dnames, '\t', False, False)
 
 
 # ---------analysis-----------------
@@ -100,17 +124,34 @@ def subcellularloc_analysis():
     files.write_assos(gene2subloc, "data/compartments/genesymbol2sublocation_human_knowledge.tsv")
 
 
+def get_entrezid2subcellular():
+    genesymbol2subloc = files.read_assos("data/compartments/genesymbol2sublocation_human_knowledge.tsv")
+    files.stat_assos(genesymbol2subloc)
+
+    genesymbols = list(genesymbol2subloc.keys())
+    genesymbol2entrezid = mapping.geneida2geneidb('symbol', 'entrezgene', genesymbols)
+    files.stat_assos(genesymbol2entrezid)
+    entrezid2subloc = {}
+    for symbol in genesymbol2subloc.keys():
+        if symbol in genesymbol2entrezid.keys():
+            for e in genesymbol2entrezid[symbol]:
+                entrezid2subloc[e] = set()
+                entrezid2subloc[e].update(genesymbol2subloc[symbol])
+    files.stat_assos(entrezid2subloc)
+    # files.write_assos(entrezid2subloc, "data/compartments/geneentrezid2sublocation_human_knowledge_mygenemapping.tsv")
+
+
 # Tang X, Hu X, Yang X, et al. A algorithm for identifying disease genes by incorporating the subcellular
 # localization information into the protein-protein interaction networks[C]//Bioinformatics and Biomedicine (BIBM),
 # 2016 IEEE International Conference on. IEEE, 2016: 308-311.
 def weighting_ppi_by_subcellularloc():
-    p2subloc = files.read_assos("data/birw_xie/BiRW_ppi_gene2subloc.tsv")
+    p2subloc = files.read_assos("data/birw_xie/CRstar_ppi_gene2subloc.tsv")
     files.stat_assos(p2subloc)
-    ppiarray = files.read_symmatrix2array("data/birw_xie/BiRW_ppi_network.txt")
-    pnames = files.read_one_col("data/birw_xie/BiRW_ppi_annotation.txt", 1, True)
+    ppiarray = files.read_symmatrix2array("data/birw_xie/CRstar_ppi_network.txt")
+    pnames = files.read_one_col("data/birw_xie/CRstar_ppi_annotation.txt", 1, False)
     print(len(pnames))
     wppiarray = subcellular.weighting_ppi(ppiarray, pnames, p2subloc)
-    files.write_symarray2file(wppiarray, "data/birw_xie/BiRW_ppi_network_sublocweighted.txt")
+    # files.write_symarray2file(wppiarray, "data/birw_xie/CRstar_ppi_network_sublocweighted.txt")
 
 
 # ------BiRW_Xie------
@@ -131,6 +172,19 @@ def get_gene2subcellular():
     # files.write_assos(genenumber2subloc, "data/birw_xie/BiRW_ppi_gene2subloc.tsv")
 
 
+def filter_gene2subcellular():
+    entrezids = files.read_one_col("data/birw_xie/CRstar_ppi_annotation.txt", 1)
+    entrezid2subloc = files.read_assos("data/compartments/geneentrezid2sublocation_human_knowledge_mygenemapping.tsv")
+    files.stat_assos(entrezid2subloc)
+    entrezid2subloc_filter = {}
+    for e in entrezids:
+        if e in entrezid2subloc.keys():
+            entrezid2subloc_filter[e] = set()
+            entrezid2subloc_filter[e].update(entrezid2subloc[e])
+    files.stat_assos(entrezid2subloc_filter)
+    files.write_assos(entrezid2subloc_filter, "data/birw_xie/CRstar_ppi_gene2subloc.tsv")
+
+
 if __name__ == '__main__':
-    # weighting_ppi_by_subcellularloc()
+    simcal_module()
     pass
