@@ -49,6 +49,7 @@ class OmimEntries:
         rawp2g = {}
         phepattern = re.compile(r'\d\d\d\d\d\d')
         type_pheno = re.compile(r'phenotype')
+        type_gene = re.compile(r'gene')
         with open(filepath, mode='r') as rf:
             for line in rf:
                 if not line.startswith('#'):
@@ -61,7 +62,10 @@ class OmimEntries:
                         phenotype = ptemp.group()
                     else:
                         phenotype = mimnumber
-                    if type_pheno.search(miminfos[phenotype].gettype()):
+                    if type_pheno.search(miminfos[phenotype].gettype()) and \
+                            not type_gene.search(miminfos[phenotype].gettype()):
+                        # if miminfos[phenotype].gettype() != 'phenotype':
+                        #     print(phenotype, miminfos[phenotype].gettype(), mimnumber)
                         if phenotype not in rawp2g.keys():
                             rawp2g[phenotype] = set()
                         rawp2g[phenotype].add(mimnumber)
@@ -70,7 +74,6 @@ class OmimEntries:
                     #     pass
         p2g = {}
         if genetype == 'omim':
-            type_gene = re.compile(r'gene')
             for p in rawp2g.keys():
                 for g in rawp2g[p]:
                     if type_gene.search(miminfos[g].gettype()):

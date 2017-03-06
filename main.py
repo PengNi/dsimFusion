@@ -6,15 +6,16 @@ import similarity_normalize
 import subcellular
 import mapping
 import similarity_module
+import experiments
 
 
 # ------omim pheno 2 geno------
 def omim_p2g():
     mims = omim.OmimEntries()
     mims.readinfo_file("data/omim/mim2gene.txt")
-    pheno2geno = mims.readmorbidmap('data/omim/morbidmap.txt', 'entrezid')
+    pheno2geno = mims.readmorbidmap('data/omim/morbidmap.txt', 'symbol')
     files.stat_assos(pheno2geno)
-    files.write_assos(pheno2geno, 'data/omim/pheno2geneentrez.tsv')
+    files.write_assos(pheno2geno, 'data/omim/pheno2genesymbol.tsv')
 
 
 # ------normalize similarity------
@@ -30,28 +31,34 @@ def mimminer_analysis():
     retrivesims = files.retrive_sims(mimminersim, d170order)
     files.stat_sims(retrivesims)
     # knnsim = similarity_normalize.norm_k_nearest_neighbor(retrivesims)
-    files.write_simmatrix(retrivesims, 'data/sims/miminer170_matrix.tsv', True, d170order)
+    # files.write_simmatrix(retrivesims, 'data/sims/miminer170_matrix.tsv', True, d170order)
 
 
 def normalize_similarity():
     sim = files.read_simmatrix("D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\"
-                               "dsim_snf_mimminerspavgn_crstar170.tsv")
+                               "dsim_snf_spavgnrwrknn_crstar170.tsv")
     files.stat_sims(sim)
     sim_knn = similarity_normalize.norm_k_nearest_neighbor(sim)
     files.stat_sims(sim_knn)
     d170 = files.read_one_col("D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\"
                               "PhenotypeID_170.tsv", 1)
-    files.write_simmatrix(sim_knn,
-                          "D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\"
-                          "similarity_snfmimminerspavgn_digeomim170_originalppimagger_matrix.tsv", True, d170)
+    # files.write_simmatrix(sim_knn,
+    #                       "D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\"
+    #                       "similarity_snfknnspavgnrwrknn_digeomim170_originalppimagger_matrix.tsv",
+    #                       True, d170, '\t', False, False)
     pass
 
 
 def normalize_similarity2():
-    sims = files.read_sims("data/sims/similarity_funsim_birwdgomim2007_triplet.tsv")
+    sims = files.read_sims("D:\\Documents\\workspace\\pyworkspace\\dsimModuleTheory\\"
+                           "outputs\\similarity_hpole_birwomim5080_triplet.tsv")
+    files.stat_sims(sims)
     knnsims = similarity_normalize.norm_k_nearest_neighbor(sims)
     dnames = files.read_one_col("data/birw_xie/BiRW_phenotype_annotation.txt", 2)
-    files.write_simmatrix(knnsims, "data/sims/similarity_funsimknn_birwdgomim2007_5080mat.tsv", True, dnames)
+    # dnames = files.read_one_col("D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\"
+    #                             "PhenotypeID_170.tsv", 1)
+    files.write_simmatrix(sims, "data/sims/similarity_hpole_birwomim5080_matrix.tsv",
+                          True, dnames, '\t', False, False)
 
 
 # ------similarity calculation------
@@ -65,23 +72,122 @@ def simcal_module():
 
     knnsims = similarity_normalize.norm_k_nearest_neighbor(sim)
     dnames = files.read_one_col("data/birw_xie/BiRW_phenotype_annotation.txt", 2)
-    files.write_simmatrix(knnsims, "data/sims/similarity_spavgnknn_birwdgomim2007_birwhprd_5080mat.tsv",
-                          True, dnames, '\t', False, False)
+    # files.write_simmatrix(knnsims, "data/sims/similarity_spavgnknn_birwdgomim2007_birwhprd_5080mat.tsv",
+    #                       True, dnames, '\t', False, False)
+
+
+def simcal_module_multitimes():
+    g = similarity_module.read_interactome("data/ppi/tissuespec_magger/original_ppi.txt", False, False)
+    print(len(g.vs), len(g.es))
+
+    d2gdirectory = 'D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\data\\'
+    d2gfile = d2gdirectory + 'pheno2geno.txt'
+    d2g = files.read_assos(d2gfile, True)
+    files.stat_assos(d2g)
+    for d in d2g.keys():
+        print(d, len(d2g[d]))
+
+    d170order = files.read_one_col(d2gdirectory + 'PhenotypeID_170.tsv', 1)
+
+    d2g_tuple = []
+    with open(d2gfile, mode='r') as rf:
+        next(rf)
+        for line in rf:
+            words = line.strip().split('\t')
+            d2g_tuple.append((words[0], words[1]))
+    print(len(d2g_tuple))
+    # with open(d2gdirectory + 'pheno2geno_multimark_v2.txt', mode='w') as wf:
+    #     for d2gt in d2g_tuple:
+    #         wf.write(str(d2gt[0]) + '\t' + str(d2gt[1]) + '\t')
+    #         if len(d2g[d2gt[0]]) > 4:
+    #             wf.write('1\t1\t1\t1\t1\n')
+    #         elif len(d2g[d2gt[0]]) > 3:
+    #             wf.write('1\t1\t1\t1\t0\n')
+    #         elif len(d2g[d2gt[0]]) > 2:
+    #             wf.write('1\t1\t1\t0\t0\n')
+    #         elif len(d2g[d2gt[0]]) > 1:
+    #             wf.write('1\t1\t0\t0\t0\n')
+    #         elif len(d2g[d2gt[0]]) > 0:
+    #             wf.write('1\t0\t0\t0\t0\n')
+    #         else:
+    #             wf.write('0\t0\t0\t0\t0\n')
+
+    # transformdistance = True
+    # dgs = set()
+    # for d in d2g.keys():
+    #     dgs |= set(d2g[d])
+    # print("disease genes num:", len(dgs))
+    # genegenesim = similarity_module.sim_gene2gene_shortestpath(dgs, g, transformdistance)
+    # for i in range(0, len(d2g_tuple)):
+    #     dgtuple = d2g_tuple[i]
+    #     filenames = d2gdirectory + 'data\\modulesim\\similarity170_matrix' + str(i+1) + '.txt'
+    #     d2g_new = {}
+    #     for d in d2g.keys():
+    #         d2g_new[d] = set()
+    #         d2g_new[d].update(d2g[d])
+    #     d2g_new[dgtuple[0]].remove(dgtuple[1])
+    #     files.stat_assos(d2g_new)
+    #     simtemp = similarity_module.similarity_cal_spavgn_multitimescore(d2g_new, g, genegenesim, True)
+    #     files.write_simmatrix(simtemp, filenames, True, d170order, '\t', False, False)
+
+
+def simcal_netsim_multitimes():
+    d2gdirectory = 'D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\data\\'
+    d2gfile = d2gdirectory + 'pheno2geno.txt'
+    d2g = files.read_assos(d2gfile, True)
+    files.stat_assos(d2g)
+    d170order = files.read_one_col(d2gdirectory + 'PhenotypeID_170.tsv', 1)
+    d2g_tuple = []
+    with open(d2gfile, mode='r') as rf:
+        next(rf)
+        for line in rf:
+            words = line.strip().split('\t')
+            d2g_tuple.append((words[0], words[1]))
+    print(len(d2g_tuple))
+
+    sim_g2d_filepre = "D:\\Documents\\workspace\\rworkspace\\rwr\\data\\netsim\\similarity_g2d_matrix"
+    for i in range(0, len(d2g_tuple)):
+        dgtuple = d2g_tuple[i]
+
+        d2g_new = {}
+        for d in d2g.keys():
+            d2g_new[d] = set()
+            d2g_new[d].update(d2g[d])
+        d2g_new[dgtuple[0]].remove(dgtuple[1])
+        if len(d2g_new[dgtuple[0]]) == 0:
+            del d2g_new[dgtuple[0]]
+        files.stat_assos(d2g_new)
+        sim_g2d = files.read_simmatrix(sim_g2d_filepre + str(i+1) + '.txt')
+        sim = experiments.sim_geneset2geneset_rwr(d2g_new, sim_g2d)
+        filenames = d2gdirectory + 'netsim\\similarity170_matrix' + str(i + 1) + '.txt'
+        files.write_simmatrix(sim, filenames, True, d170order, '\t', False, False)
 
 
 # ---------analysis-----------------
 def compare_2_version_dgassos():
-    d170order = files.read_one_col('D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\'
+    d170order = files.read_one_col('D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\data\\'
                                    'PhenotypeID_170.tsv', 1)
     d2g1 = files.read_assos('data/omim/pheno2geneentrez.tsv')
-    d2g2 = files.read_assos('D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\'
+    d2g2 = files.read_assos('D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\data\\'
                             'pheno2geno.txt', True)
     for d in d170order:
         if d in d2g1.keys():
-            print(d, d2g1[d], d2g2[d], sep='\t\t')
+            print(d, d2g1[d], d2g2[d], sep='\t\t\t')
         else:
-            print(d, '--', d2g2[d], sep='\t\t')
+            print(d, '--', d2g2[d], sep='\t\t\t')
     pass
+
+
+def ana_dgassos():
+    d2g = files.read_assos('D:\\Documents\\workspace\\matlabworkspace\\NoNCRstar-master\\CRstar\\'
+                           'pheno2geno.txt', True)
+    files.stat_assos(d2g)
+    for d in d2g.keys():
+        print(d, d2g[d])
+    print()
+    g2d = files.invert_dict(d2g)
+    for g in g2d.keys():
+        print(g, g2d[g])
 
 
 # ---------access data from magger's paper---------
@@ -121,7 +227,7 @@ def subcellularloc_analysis():
     gene2subloc = subcellular.get_gene2sublocation("data/compartments/human_compartment_knowledge_full.tsv",
                                                    prefix)
     files.stat_assos(gene2subloc)
-    files.write_assos(gene2subloc, "data/compartments/genesymbol2sublocation_human_knowledge.tsv")
+    # files.write_assos(gene2subloc, "data/compartments/genesymbol2sublocation_human_knowledge.tsv")
 
 
 def get_entrezid2subcellular():
@@ -186,5 +292,5 @@ def filter_gene2subcellular():
 
 
 if __name__ == '__main__':
-    simcal_module()
+    omim_p2g()
     pass
