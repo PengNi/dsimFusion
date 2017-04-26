@@ -13,9 +13,9 @@ import experiments
 def omim_p2g():
     mims = omim.OmimEntries()
     mims.readinfo_file("data/omim/mim2gene.txt")
-    pheno2geno = mims.readmorbidmap('data/omim/morbidmap.txt', 'symbol')
+    pheno2geno = mims.readmorbidmap('data/omim/morbidmap.txt', 'entrezid')
     files.stat_assos(pheno2geno)
-    files.write_assos(pheno2geno, 'data/omim/pheno2genesymbol.tsv')
+    # files.write_assos(pheno2geno, 'data/omim/pheno2genesymbol.tsv')
 
 
 # ------normalize similarity------
@@ -291,6 +291,43 @@ def filter_gene2subcellular():
     files.write_assos(entrezid2subloc_filter, "data/birw_xie/CRstar_ppi_gene2subloc.tsv")
 
 
+# --------mat2tri--------
+def mat2trisim():
+    msim = files.read_simmatrix('data/simresults/omimsim_suntopo_4031_matrix.txt')
+    files.stat_sims(msim)
+    files.write_sims(msim, 'data/simresults/omimsim_suntopo_4031_triplet.txt')
+
+
+def trisort():
+    simfile = 'data/simresults/similarity_spavgn_trans_rwrsidd_hppinwsl.tsv'
+    simfile_filter = 'data/simresults/similarity_spavgn_trans_rwrsidd_hppinwsl_co14671.tsv'
+    cutofff = 14671
+    descend = True
+
+    sortpairs = []
+    with open(simfile, 'r') as rf:
+        for line in rf:
+            words = line.strip().split('\t')
+            if words[0] != words[1] and words[2] != 'Inf':
+                sortpairs.append((words[0], words[1], float(words[2])))
+
+    sortpairs = sorted(sortpairs, key=lambda a: a[2], reverse=descend)
+
+    with open(simfile_filter, 'w') as wf:
+        for i in range(0, cutofff):
+            tupletmp = sortpairs[i]
+            wf.write(tupletmp[0] + '\t' + tupletmp[1] + '\t' + str(round(tupletmp[2], 5)) + '\n')
+    print('trisort finished!')
+
+
 if __name__ == '__main__':
-    omim_p2g()
+    # omim_p2g()
+
+    # osim = files.read_sims('data/simresults/meshsim_misim_5429_triplet.txt')
+    # name1 = files.read_one_col('data/simresults/meshsim_misim_5429_triplet.txt', 1)
+    # name2 = files.read_one_col('data/simresults/meshsim_misim_5429_triplet.txt', 2)
+    # names = sorted(list(set(name1).union(name2)))
+    # files.write_simmatrix(osim, 'data/simresults/meshsim_misim_5429_matrxi.txt', True, names)
+
+    # trisort()
     pass
